@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- Mobile viewport optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    
+    <!-- PWA and mobile app meta tags -->
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#6366f1" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#4f46e5" />
+    <meta name="color-scheme" content="light dark" />
+    
+    <!-- App description and SEO -->
+    <meta name="description" content="Find the longest reasonable route to extend your baby's nap time while driving. Mobile-optimized route planning for parents." />
+    <meta name="keywords" content="baby nap, car route, driving route, parent app, navigation, sleep" />
+    <meta name="author" content="NapRoute" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://napRoute.app/" />
+    <meta property="og:title" content="NapRoute - Extend Your Baby's Car Nap" />
+    <meta property="og:description" content="Find the longest reasonable route to extend your baby's nap time while driving" />
+    <meta property="og:image" content="/icons/og-image.png" />
+    <meta property="og:site_name" content="NapRoute" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://napRoute.app/" />
+    <meta property="twitter:title" content="NapRoute - Extend Your Baby's Car Nap" />
+    <meta property="twitter:description" content="Find the longest reasonable route to extend your baby's nap time while driving" />
+    <meta property="twitter:image" content="/icons/twitter-image.png" />
+    
+    <!-- iOS Safari specific -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="NapRoute" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- iOS icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png" />
+    
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://maps.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://maps.gstatic.com" />
+    
+    <!-- Security headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <!-- Performance hints -->
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <title>NapRoute - Extend Your Baby's Car Nap</title>
+    
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="/src/styles/main.css" as="style" />
+    <link rel="stylesheet" href="/src/styles/main.css" />
+  </head>
+  <body>
+    <!-- Skip to main content link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <div id="app" role="application" aria-label="NapRoute - Baby nap route finder">
+      <!-- Home Screen -->
+      <main class="screen home-screen active" id="home-screen" role="main" aria-labelledby="app-title">
+        <header class="app-header">
+          <h1 class="app-title" id="app-title">NapRoute</h1>
+          <p class="app-subtitle" id="app-description">Extend your baby's car nap with the longest reasonable route</p>
+        </header>
+
+        <section class="input-section" aria-labelledby="route-planning-heading" id="main-content">
+          <h2 class="visually-hidden" id="route-planning-heading">Route Planning</h2>
+          <form class="route-form" id="route-form" novalidate aria-describedby="app-description">
+            <fieldset class="input-fieldset">
+              <legend class="visually-hidden">Route Information</legend>
+              
+              <div class="input-group">
+                <label for="current-location" class="input-label">
+                  <span class="label-text">From</span>
+                  <span class="label-required visually-hidden">(Current location will be detected)</span>
+                </label>
+                <div class="location-input-container">
+                  <input 
+                    type="text" 
+                    id="current-location" 
+                    class="location-input" 
+                    placeholder="Current location" 
+                    readonly
+                    aria-describedby="location-status location-help"
+                    aria-required="true"
+                  />
+                  <button 
+                    type="button" 
+                    class="location-btn" 
+                    id="detect-location-btn"
+                    aria-label="Detect and use my current GPS location"
+                    title="Use my current location"
+                    aria-describedby="location-btn-help"
+                  >
+                    <svg class="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span class="visually-hidden">GPS location icon</span>
+                  </button>
+                </div>
+                <div id="location-help" class="visually-hidden">
+                  Click the location button to automatically detect your current position using GPS
+                </div>
+                <div id="location-btn-help" class="visually-hidden">
+                  This button will request access to your device's location to automatically fill in your starting point
+                </div>
+                <div id="location-status" class="input-status" aria-live="polite" aria-atomic="true"></div>
+              </div>
+
+              <div class="input-group">
+                <label for="destination" class="input-label">
+                  <span class="label-text">To</span>
+                  <span class="label-required" aria-label="required">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="destination" 
+                  class="destination-input" 
+                  placeholder="Enter destination address"
+                  required
+                  aria-describedby="destination-help destination-error"
+                  aria-invalid="false"
+                  autocomplete="street-address"
+                />
+                <div id="destination-help" class="input-help">
+                  Enter the full address where you want to go (street, city, state)
+                </div>
+                <div id="destination-error" class="input-error" aria-live="polite" role="alert"></div>
+              </div>
+            </fieldset>
+
+            <button 
+              type="submit" 
+              class="find-route-btn" 
+              id="find-route-btn"
+              disabled
+              aria-describedby="find-route-help"
+            >
+              <span class="btn-text">Find Nap Route</span>
+              <div class="loading-spinner hidden" aria-hidden="true" role="status">
+                <div class="spinner"></div>
+                <span class="visually-hidden">Calculating route...</span>
+              </div>
+            </button>
+            <div id="find-route-help" class="visually-hidden">
+              This will calculate multiple routes and select the longest reasonable option to extend your baby's nap time
+            </div>
+          </form>
+        </section>
+      </main>
+
+      <!-- Results Screen -->
+      <main class="screen results-screen" id="results-screen" role="main" aria-labelledby="results-title">
+        <header class="results-header">
+          <button 
+            class="back-btn" 
+            id="back-btn"
+            aria-label="Go back to route planning screen"
+            title="Return to home screen"
+          >
+            <svg class="back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span class="visually-hidden">Back arrow icon</span>
+          </button>
+          <h1 class="results-title" id="results-title">Your Nap Route</h1>
+        </header>
+
+        <section class="map-section" aria-labelledby="map-heading">
+          <h2 class="visually-hidden" id="map-heading">Interactive Route Map</h2>
+          <div class="map-container" id="map-container" role="img" aria-label="Interactive map showing your calculated nap route" tabindex="0">
+            <div class="map-placeholder">
+              <p>Map will load here</p>
+              <div class="loading-spinner" aria-hidden="true" role="status">
+                <div class="spinner"></div>
+                <span class="visually-hidden">Loading map...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="route-info-section" aria-labelledby="route-info-heading">
+          <h2 class="visually-hidden" id="route-info-heading">Route Details and Actions</h2>
+          <div class="route-info-card">
+            <div class="route-stats" role="group" aria-labelledby="route-stats-heading">
+              <h3 class="visually-hidden" id="route-stats-heading">Route Statistics</h3>
+              <div class="stat-item">
+                <span class="stat-label" id="distance-label">Distance</span>
+                <span class="stat-value" id="route-distance" aria-labelledby="distance-label">--</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label" id="duration-label">Duration</span>
+                <span class="stat-value" id="route-duration" aria-labelledby="duration-label">--</span>
+              </div>
+            </div>
+            
+            <p class="route-description" id="route-description" aria-live="polite">
+              Longest of X routes found
+            </p>
+
+            <div class="action-buttons" role="group" aria-labelledby="action-buttons-heading">
+              <h3 class="visually-hidden" id="action-buttons-heading">Available Actions</h3>
+              <button class="start-nav-btn" id="start-nav-btn" aria-describedby="start-nav-help">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                </svg>
+                <span class="visually-hidden">Navigation arrow icon</span>
+                Start Navigation
+              </button>
+              <div id="start-nav-help" class="visually-hidden">
+                Opens your device's default navigation app with the calculated route
+              </div>
+              
+              <button class="try-again-btn" id="try-again-btn" aria-describedby="try-again-help">
+                Try Again
+              </button>
+              <div id="try-again-help" class="visually-hidden">
+                Returns to the home screen to plan a new route
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Error Message Component -->
+      <div class="error-message hidden" id="error-message" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="error-content">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          <span class="visually-hidden">Error icon</span>
+          <p class="error-text" id="error-text" role="status"></p>
+          <button class="error-close-btn" id="error-close-btn" aria-label="Close error message and return to application">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span class="visually-hidden">Close icon</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Preload critical JavaScript -->
+    <link rel="modulepreload" href="/src/main.js" />
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

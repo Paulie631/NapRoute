@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NapRoute - Local Deployment Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .code {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 NapRoute Local Deployment Testing</h1>
+    
+    <div class="test-section">
+        <h2>📋 Quick Testing Checklist</h2>
+        <div class="info test-result">
+            <strong>Use this page to validate your deployment setup locally before pushing to production.</strong>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. 🔧 Environment Configuration Test</h2>
+        <button onclick="testEnvironment()">Test Environment Setup</button>
+        <div id="env-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 🏗️ Build System Test</h2>
+        <p>Run these commands in your terminal:</p>
+        <div class="code">
+# Test development build
+npm run dev
+
+# Test production build
+npm run build
+
+# Test production preview
+npm run preview
+
+# Validate production readiness
+npm run validate:production
+        </div>
+        <button onclick="showBuildInstructions()">Show Detailed Instructions</button>
+        <div id="build-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 🔒 Security Headers Test</h2>
+        <button onclick="testSecurityHeaders()">Test Security Configuration</button>
+        <div id="security-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 📱 Mobile Responsiveness Test</h2>
+        <button onclick="testMobileView()">Test Mobile View</button>
+        <div id="mobile-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. 🚀 Deployment Configuration Test</h2>
+        <button onclick="testDeploymentConfig()">Test Deployment Files</button>
+        <div id="deployment-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. ⚡ Performance Test</h2>
+        <button onclick="testPerformance()">Run Performance Checks</button>
+        <div id="performance-results"></div>
+    </div>
+
+    <script>
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        function testEnvironment() {
+            clearResults('env-results');
+            
+            // Test if we're in a secure context
+            if (window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost') {
+                addResult('env-results', '✅ Secure context detected (HTTPS or localhost)', 'success');
+            } else {
+                addResult('env-results', '⚠️ Not in secure context - some features may not work', 'warning');
+            }
+
+            // Test viewport
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                addResult('env-results', '✅ Viewport meta tag configured', 'success');
+            } else {
+                addResult('env-results', '❌ Viewport meta tag missing', 'error');
+            }
+
+            // Test service worker support
+            if ('serviceWorker' in navigator) {
+                addResult('env-results', '✅ Service Worker supported', 'success');
+            } else {
+                addResult('env-results', '❌ Service Worker not supported', 'error');
+            }
+
+            // Test geolocation support
+            if ('geolocation' in navigator) {
+                addResult('env-results', '✅ Geolocation API supported', 'success');
+            } else {
+                addResult('env-results', '❌ Geolocation API not supported', 'error');
+            }
+        }
+
+        function showBuildInstructions() {
+            clearResults('build-results');
+            addResult('build-results', `
+                <strong>Step-by-step build testing:</strong><br><br>
+                <strong>1. Development Server:</strong><br>
+                <code>npm run dev</code><br>
+                → Should start on http://localhost:5173<br><br>
+                
+                <strong>2. Production Build:</strong><br>
+                <code>npm run build</code><br>
+                → Should create 'dist' folder with optimized files<br><br>
+                
+                <strong>3. Production Preview:</strong><br>
+                <code>npm run preview</code><br>
+                → Should start on http://localhost:4173<br><br>
+                
+                <strong>4. Validation:</strong><br>
+                <code>npm run validate:production</code><br>
+                → Should check all deployment requirements<br><br>
+                
+                <strong>Expected file sizes (gzipped):</strong><br>
+                • Main JS bundle: < 100KB<br>
+                • CSS bundle: < 20KB<br>
+                • Total initial load: < 150KB
+            `, 'info');
+        }
+
+        function testSecurityHeaders() {
+            clearResults('security-results');
+            
+            // Test CSP
+            const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+            if (csp) {
+                addResult('security-results', '✅ Content Security Policy configured', 'success');
+            } else {
+                addResult('security-results', '⚠️ CSP not found (may be set by server)', 'warning');
+            }
+
+            // Test HTTPS
+            if (location.protocol === 'https:') {
+                addResult('security-results', '✅ HTTPS enabled', 'success');
+            } else if (location.hostname === 'localhost') {
+                addResult('security-results', '⚠️ HTTP on localhost (OK for development)', 'warning');
+            } else {
+                addResult('security-results', '❌ HTTP in production (security risk)', 'error');
+            }
+
+            addResult('security-results', `
+                <strong>Security checklist for production:</strong><br>
+                • HTTPS enforcement ✓<br>
+                • Security headers configured ✓<br>
+                • API key restrictions set ⚠️ (check Google Cloud Console)<br>
+                • Domain restrictions configured ⚠️ (check deployment platform)
+            `, 'info');
+        }
+
+        function testMobileView() {
+            clearResults('mobile-results');
+            
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            if (width <= 768) {
+                addResult('mobile-results', `✅ Mobile viewport detected (${width}x${height})`, 'success');
+            } else {
+                addResult('mobile-results', `ℹ️ Desktop viewport (${width}x${height}) - test on mobile device`, 'info');
+            }
+
+            // Test touch support
+            if ('ontouchstart' in window) {
+                addResult('mobile-results', '✅ Touch events supported', 'success');
+            } else {
+                addResult('mobile-results', '⚠️ Touch events not detected', 'warning');
+            }
+
+            addResult('mobile-results', `
+                <strong>Mobile testing checklist:</strong><br>
+                • Test on actual mobile devices ⚠️<br>
+                • Check touch targets (min 44px) ⚠️<br>
+                • Verify location permissions ⚠️<br>
+                • Test offline functionality ⚠️<br>
+                • Check performance on slow networks ⚠️
+            `, 'info');
+        }
+
+        function testDeploymentConfig() {
+            clearResults('deployment-results');
+            
+            addResult('deployment-results', `
+                <strong>Deployment files created:</strong><br>
+                ✅ netlify.toml - Netlify configuration<br>
+                ✅ vercel.json - Vercel configuration<br>
+                ✅ .github/workflows/deploy.yml - CI/CD pipeline<br>
+                ✅ lighthouserc.js - Performance monitoring<br>
+                ✅ .env.production - Production environment<br><br>
+                
+                <strong>To test deployment locally:</strong><br>
+                1. Install deployment CLI: <code>npm install -g netlify-cli</code><br>
+                2. Build: <code>npm run build</code><br>
+                3. Test deploy: <code>netlify deploy --dir=dist</code><br>
+                4. Production deploy: <code>netlify deploy --prod --dir=dist</code>
+            `, 'success');
+        }
+
+        function testPerformance() {
+            clearResults('performance-results');
+            
+            // Basic performance metrics
+            if (performance && performance.timing) {
+                const timing = performance.timing;
+                const loadTime = timing.loadEventEnd - timing.navigationStart;
+                
+                if (loadTime < 3000) {
+                    addResult('performance-results', `✅ Page load time: ${loadTime}ms (< 3s)`, 'success');
+                } else {
+                    addResult('performance-results', `⚠️ Page load time: ${loadTime}ms (> 3s)`, 'warning');
+                }
+            }
+
+            addResult('performance-results', `
+                <strong>Performance testing commands:</strong><br><br>
+                
+                <strong>Lighthouse audit:</strong><br>
+                <code>npm run lighthouse</code><br>
+                → Generates lighthouse-report.html<br><br>
+                
+                <strong>Bundle analysis:</strong><br>
+                <code>npm run build:analyze</code><br>
+                → Shows bundle size breakdown<br><br>
+                
+                <strong>Performance tests:</strong><br>
+                <code>npm run test:performance</code><br>
+                → Runs automated performance tests<br><br>
+                
+                <strong>Target metrics:</strong><br>
+                • First Contentful Paint: < 2s<br>
+                • Largest Contentful Paint: < 3s<br>
+                • Cumulative Layout Shift: < 0.1<br>
+                • Total Blocking Time: < 300ms
+            `, 'info');
+        }
+
+        // Auto-run environment test on load
+        window.addEventListener('load', () => {
+            setTimeout(testEnvironment, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+# Netlify deployment configuration
+[build]
+  # Build command
+  command = "npm run build"
+  
+  # Output directory
+  publish = "dist"
+  
+  # Environment variables for build
+  [build.environment]
+    NODE_VERSION = "18"
+    NPM_VERSION = "9"
+
+# Production deployment settings
+[context.production]
+  command = "npm run build"
+  
+  [context.production.environment]
+    VITE_APP_ENVIRONMENT = "production"
+
+# Branch deploy settings
+[context.branch-deploy]
+  command = "npm run build"
+
+# Deploy preview settings
+[context.deploy-preview]
+  command = "npm run build"
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=()"
+    
+    # Content Security Policy
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://maps.googleapis.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' data: https://maps.googleapis.com https://maps.gstatic.com https://*.googleusercontent.com;
+      connect-src 'self' https://maps.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      frame-src 'none';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    """
+    
+    # Performance headers
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache service worker with shorter duration
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# HTML files - no cache for main pages
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Redirects for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+# Force HTTPS
+[[redirects]]
+  from = "http://napRoute.app/*"
+  to = "https://napRoute.app/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.napRoute.app/*"
+  to = "https://www.napRoute.app/:splat"
+  status = 301
+  force = true
+
+# Functions (if needed in future)
+[functions]
+  directory = "netlify/functions"

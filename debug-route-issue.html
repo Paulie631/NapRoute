@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Route Issue - NapRoute</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        #map { height: 300px; width: 100%; border: 1px solid #ccc; margin: 10px 0; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 3px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 NapRoute Debug Tool</h1>
+    
+    <div class="test-section info">
+        <h3>Debug Steps</h3>
+        <p>This tool will help us identify why route calculation isn't working.</p>
+        <p><strong>Your API Key:</strong> AIzaSyCxgmalqSC-2R9Y7kK0QkxrScDGXgw9AwY</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 1: Test API Key</h3>
+        <button onclick="testApiKey()">Test Google Maps API Key</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 2: Test Map Loading</h3>
+        <button onclick="testMapLoading()" id="map-btn" disabled>Load Map</button>
+        <div id="map"></div>
+        <div id="map-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 3: Test Route Calculation</h3>
+        <button onclick="testRouteCalculation()" id="route-btn" disabled>Test Route Calculation</button>
+        <div id="route-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Debug Log</h3>
+        <button onclick="clearLog()">Clear Log</button>
+        <div id="debug-log" class="log"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyCxgmalqSC-2R9Y7kK0QkxrScDGXgw9AwY';
+        let map = null;
+        let directionsService = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            // Also log to console
+            console.log(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `test-section ${type}`;
+            element.innerHTML = message;
+        }
+
+        function testApiKey() {
+            log('Testing Google Maps API key...');
+            showResult('api-result', 'Loading Google Maps API...', 'warning');
+
+            // Test if we can load the Google Maps API
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places,geometry&callback=onGoogleMapsLoaded`;
+            
+            script.onerror = function() {
+                log('Failed to load Google Maps API script', 'error');
+                showResult('api-result', '❌ Failed to load Google Maps API. Check your internet connection and API key.', 'error');
+            };
+
+            document.head.appendChild(script);
+        }
+
+        function onGoogleMapsLoaded() {
+            log('Google Maps API loaded successfully');
+            showResult('api-result', '✅ Google Maps API loaded successfully!', 'success');
+            
+            // Enable next test
+            document.getElementById('map-btn').disabled = false;
+            
+            // Test API key validity
+            testApiKeyValidity();
+        }
+
+        function testApiKeyValidity() {
+            log('Testing API key validity...');
+            
+            try {
+                // Try to create a simple service to test API key
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: 'San Francisco, CA' }, function(results, status) {
+                    if (status === 'OK') {
+                        log('API key is valid - geocoding works');
+                        showResult('api-result', '✅ Google Maps API loaded and API key is valid!', 'success');
+                    } else {
+                        log(`API key test failed: ${status}`, 'error');
+                        showResult('api-result', `❌ API key issue: ${status}. Check your API key restrictions.`, 'error');
+                    }
+                });
+            } catch (error) {
+                log(`Error testing API key: ${error.message}`, 'error');
+                showResult('api-result', `❌ Error testing API key: ${error.message}`, 'error');
+            }
+        }
+
+        function testMapLoading() {
+            log('Testing map initialization...');
+            showResult('map-result', 'Initializing map...', 'warning');
+
+            try {
+                const mapContainer = document.getElementById('map');
+                
+                map = new google.maps.Map(mapContainer, {
+                    center: { lat: 37.7749, lng: -122.4194 }, // San Francisco
+                    zoom: 13
+                });
+
+                // Add a marker to test
+                const marker = new google.maps.Marker({
+                    position: { lat: 37.7749, lng: -122.4194 },
+                    map: map,
+                    title: 'Test Location'
+                });
+
+                log('Map initialized successfully');
+                showResult('map-result', '✅ Map loaded successfully!', 'success');
+                
+                // Enable route test
+                document.getElementById('route-btn').disabled = false;
+
+            } catch (error) {
+                log(`Map initialization failed: ${error.message}`, 'error');
+                showResult('map-result', `❌ Map initialization failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testRouteCalculation() {
+            log('Testing route calculation...');
+            showResult('route-result', 'Calculating route...', 'warning');
+
+            try {
+                // Initialize directions service
+                directionsService = new google.maps.DirectionsService();
+                
+                const request = {
+                    origin: 'San Francisco, CA',
+                    destination: 'Los Angeles, CA',
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    provideRouteAlternatives: true
+                };
+
+                log('Sending directions request...');
+                
+                directionsService.route(request, function(result, status) {
+                    log(`Directions response status: ${status}`);
+                    
+                    if (status === 'OK') {
+                        const routes = result.routes;
+                        log(`Found ${routes.length} route(s)`);
+                        
+                        // Display first route
+                        const directionsRenderer = new google.maps.DirectionsRenderer();
+                        directionsRenderer.setMap(map);
+                        directionsRenderer.setDirections(result);
+                        
+                        // Show route details
+                        const route = routes[0];
+                        const leg = route.legs[0];
+                        const routeInfo = `
+                            <strong>✅ Route calculation successful!</strong><br>
+                            Distance: ${leg.distance.text}<br>
+                            Duration: ${leg.duration.text}<br>
+                            Routes found: ${routes.length}
+                        `;
+                        
+                        showResult('route-result', routeInfo, 'success');
+                        log('Route calculation completed successfully');
+                        
+                    } else {
+                        log(`Route calculation failed: ${status}`, 'error');
+                        let errorMessage = `❌ Route calculation failed: ${status}`;
+                        
+                        switch(status) {
+                            case 'NOT_FOUND':
+                                errorMessage += '<br>One or more locations could not be found.';
+                                break;
+                            case 'ZERO_RESULTS':
+                                errorMessage += '<br>No route could be found between the origin and destination.';
+                                break;
+                            case 'OVER_QUERY_LIMIT':
+                                errorMessage += '<br>API quota exceeded. Check your billing settings.';
+                                break;
+                            case 'REQUEST_DENIED':
+                                errorMessage += '<br>Request denied. Check API key restrictions.';
+                                break;
+                            case 'INVALID_REQUEST':
+                                errorMessage += '<br>Invalid request parameters.';
+                                break;
+                            default:
+                                errorMessage += '<br>Unknown error occurred.';
+                        }
+                        
+                        showResult('route-result', errorMessage, 'error');
+                    }
+                });
+
+            } catch (error) {
+                log(`Route calculation error: ${error.message}`, 'error');
+                showResult('route-result', `❌ Route calculation error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').innerHTML = '';
+        }
+
+        // Initialize
+        window.onload = function() {
+            log('Debug tool loaded');
+            log('Click "Test Google Maps API Key" to start debugging');
+        };
+
+        // Global error handler
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            log(`JavaScript Error: ${msg} at ${url}:${lineNo}:${columnNo}`, 'error');
+            return false;
+        };
+    </script>
+</body>
+</html>

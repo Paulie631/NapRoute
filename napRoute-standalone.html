@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NapRoute - Extend Your Baby's Nap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e9ecef;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .destination-group {
+            transition: all 0.3s ease;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results {
+            text-align: center;
+        }
+
+        .route-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .route-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .route-details {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+
+        .route-detail {
+            text-align: center;
+        }
+
+        .route-detail .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .route-detail .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        #map {
+            height: 200px;
+            width: 100%;
+            border-radius: 10px;
+            margin: 15px 0;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="home-screen">
+            <div class="header">
+                <h1>🚗💤 NapRoute</h1>
+                <p>Create the perfect driving route for your baby's nap time</p>
+            </div>
+
+            <div id="status-message" class="status hidden"></div>
+
+            <div class="form-group">
+                <label for="current-location">From (Current Location)</label>
+                <input type="text" id="current-location" placeholder="Detecting location..." readonly>
+                <button type="button" id="location-btn" class="btn btn-secondary">📍 Use Current Location</button>
+            </div>
+
+            <div class="form-group">
+                <label for="nap-duration">Desired Nap Duration</label>
+                <select id="nap-duration">
+                    <option value="15">15 minutes</option>
+                    <option value="30" selected>30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="90">1.5 hours</option>
+                    <option value="120">2 hours</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="route-type">Route Type</label>
+                <select id="route-type">
+                    <option value="circular" selected>🔄 Circular Route (return home)</option>
+                    <option value="destination">🎯 Route to Destination</option>
+                </select>
+            </div>
+
+            <div class="form-group destination-group hidden">
+                <label for="destination">To (Destination)</label>
+                <input type="text" id="destination" placeholder="Enter destination address">
+            </div>
+
+            <button type="button" id="find-route-btn" class="btn btn-primary" disabled>
+                <span class="btn-text">Find Circular Route</span>
+            </button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden">
+            <div class="header">
+                <h1>🎯 Route Found!</h1>
+                <p>Perfect for extending nap time</p>
+            </div>
+
+            <div class="route-info">
+                <h3>Longest Reasonable Route</h3>
+                <div class="route-details">
+                    <div class="route-detail">
+                        <div class="value" id="route-distance">--</div>
+                        <div class="label">Distance</div>
+                    </div>
+                    <div class="route-detail">
+                        <div class="value" id="route-duration">--</div>
+                        <div class="label">Duration</div>
+                    </div>
+                </div>
+                <p id="route-description">Route optimized for maximum nap time</p>
+            </div>
+
+            <div id="map">Map will load here</div>
+
+            <button type="button" id="start-nav-btn" class="btn btn-primary">
+                🧭 Start Navigation
+            </button>
+
+            <button type="button" id="back-btn" class="btn btn-secondary">
+                ← Back to Search
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_KEY = 'AIzaSyCxgmalqSC-2R9Y7kK0QkxrScDGXgw9AwY';
+        
+        // Application state
+        let appState = {
+            currentLocation: null,
+            destination: '',
+            napDuration: 30, // minutes
+            routeType: 'circular',
+            routes: [],
+            selectedRoute: null,
+            isLoading: false,
+            error: null
+        };
+
+        // Services
+        let map = null;
+        let directionsService = null;
+        let directionsRenderer = null;
+
+        // DOM elements
+        const elements = {
+            homeScreen: document.getElementById('home-screen'),
+            resultsScreen: document.getElementById('results-screen'),
+            statusMessage: document.getElementById('status-message'),
+            currentLocationInput: document.getElementById('current-location'),
+            napDurationSelect: document.getElementById('nap-duration'),
+            routeTypeSelect: document.getElementById('route-type'),
+            destinationInput: document.getElementById('destination'),
+            destinationGroup: document.querySelector('.destination-group'),
+            locationBtn: document.getElementById('location-btn'),
+            findRouteBtn: document.getElementById('find-route-btn'),
+            routeDistance: document.getElementById('route-distance'),
+            routeDuration: document.getElementById('route-duration'),
+            routeDescription: document.getElementById('route-description'),
+            startNavBtn: document.getElementById('start-nav-btn'),
+            backBtn: document.getElementById('back-btn'),
+            mapContainer: document.getElementById('map')
+        };
+
+        // Initialize application
+        function init() {
+            console.log('NapRoute initializing...');
+            setupEventListeners();
+            loadGoogleMapsAPI();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            elements.locationBtn.addEventListener('click', getCurrentLocation);
+            elements.napDurationSelect.addEventListener('change', handleNapDurationChange);
+            elements.routeTypeSelect.addEventListener('change', handleRouteTypeChange);
+            elements.destinationInput.addEventListener('input', handleDestinationChange);
+            elements.findRouteBtn.addEventListener('click', findRoute);
+            elements.startNavBtn.addEventListener('click', startNavigation);
+            elements.backBtn.addEventListener('click', goBack);
+        }
+
+        // Load Google Maps API
+        function loadGoogleMapsAPI() {
+            if (window.google && window.google.maps) {
+                onGoogleMapsLoaded();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places,geometry&callback=onGoogleMapsLoaded`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = () => showStatus('Failed to load Google Maps API', 'error');
+            document.head.appendChild(script);
+        }
+
+        // Google Maps API loaded callback
+        function onGoogleMapsLoaded() {
+            console.log('Google Maps API loaded');
+            directionsService = new google.maps.DirectionsService();
+            
+            // Check if geometry library is loaded
+            if (google.maps.geometry) {
+                console.log('Geometry library loaded successfully');
+                showStatus('Ready to find routes!', 'success');
+            } else {
+                showStatus('Loading geometry library...', 'warning');
+                // Reload with geometry library if not loaded
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        }
+
+        // Get current location
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showStatus('Geolocation is not supported by this browser', 'error');
+                return;
+            }
+
+            showStatus('Getting your location...', 'info');
+            elements.locationBtn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    appState.currentLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    
+                    const displayText = `${appState.currentLocation.lat.toFixed(4)}, ${appState.currentLocation.lng.toFixed(4)}`;
+                    elements.currentLocationInput.value = displayText;
+                    
+                    showStatus('Location detected successfully!', 'success');
+                    elements.locationBtn.disabled = false;
+                    updateFindRouteButton();
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    showStatus('Unable to get your location. Please enter manually.', 'error');
+                    elements.currentLocationInput.removeAttribute('readonly');
+                    elements.currentLocationInput.placeholder = 'Enter your current address';
+                    elements.locationBtn.disabled = false;
+                }
+            );
+        }
+
+        // Handle nap duration change
+        function handleNapDurationChange(event) {
+            appState.napDuration = parseInt(event.target.value);
+            console.log(`Nap duration set to: ${appState.napDuration} minutes`);
+        }
+
+        // Handle route type change
+        function handleRouteTypeChange(event) {
+            appState.routeType = event.target.value;
+            
+            if (appState.routeType === 'circular') {
+                elements.destinationGroup.classList.add('hidden');
+                elements.findRouteBtn.textContent = 'Find Circular Route';
+            } else {
+                elements.destinationGroup.classList.remove('hidden');
+                elements.findRouteBtn.textContent = 'Find Longest Route';
+            }
+            
+            updateFindRouteButton();
+        }
+
+        // Handle destination input change
+        function handleDestinationChange(event) {
+            appState.destination = event.target.value.trim();
+            updateFindRouteButton();
+        }
+
+        // Update find route button state
+        function updateFindRouteButton() {
+            const hasLocation = appState.currentLocation || elements.currentLocationInput.value.trim();
+            
+            if (appState.routeType === 'circular') {
+                // For circular routes, only need location
+                elements.findRouteBtn.disabled = !hasLocation || appState.isLoading;
+            } else {
+                // For destination routes, need both location and destination
+                const hasDestination = appState.destination;
+                elements.findRouteBtn.disabled = !hasLocation || !hasDestination || appState.isLoading;
+            }
+        }
+
+        // Find route
+        async function findRoute() {
+            if (!directionsService) {
+                showStatus('Google Maps not ready. Please wait and try again.', 'error');
+                return;
+            }
+
+            appState.isLoading = true;
+            updateLoadingState(true);
+
+            try {
+                if (appState.routeType === 'circular') {
+                    await findCircularRoute();
+                } else {
+                    await findDestinationRoute();
+                }
+            } catch (error) {
+                appState.isLoading = false;
+                updateLoadingState(false);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Find circular route for specified nap duration
+        async function findCircularRoute() {
+            const origin = appState.currentLocation || elements.currentLocationInput.value.trim();
+            const targetDurationMinutes = appState.napDuration;
+            const targetDurationSeconds = targetDurationMinutes * 60;
+
+            showStatus(`Finding ${targetDurationMinutes}-minute circular route...`, 'info');
+
+            // Generate waypoints in different directions from origin
+            const waypoints = await generateCircularWaypoints(origin, targetDurationMinutes);
+            
+            let bestRoute = null;
+            let bestDifference = Infinity;
+
+            // Try different combinations of waypoints
+            for (let i = 0; i < waypoints.length; i++) {
+                try {
+                    const request = {
+                        origin: origin,
+                        destination: origin,
+                        waypoints: [{ location: waypoints[i], stopover: false }],
+                        travelMode: google.maps.TravelMode.DRIVING,
+                        optimizeWaypoints: false
+                    };
+
+                    const result = await new Promise((resolve, reject) => {
+                        directionsService.route(request, (result, status) => {
+                            if (status === 'OK') {
+                                resolve(result);
+                            } else {
+                                reject(new Error(status));
+                            }
+                        });
+                    });
+
+                    const route = result.routes[0];
+                    const totalDuration = route.legs.reduce((sum, leg) => sum + leg.duration.value, 0);
+                    const difference = Math.abs(totalDuration - targetDurationSeconds);
+
+                    if (difference < bestDifference) {
+                        bestDifference = difference;
+                        bestRoute = {
+                            directionsResult: result,
+                            duration: { 
+                                text: formatDuration(totalDuration),
+                                value: totalDuration 
+                            },
+                            distance: {
+                                text: formatDistance(route.legs.reduce((sum, leg) => sum + leg.distance.value, 0)),
+                                value: route.legs.reduce((sum, leg) => sum + leg.distance.value, 0)
+                            },
+                            waypoint: waypoints[i],
+                            targetDuration: targetDurationMinutes
+                        };
+                    }
+                } catch (error) {
+                    console.log(`Waypoint ${i} failed:`, error);
+                    continue;
+                }
+            }
+
+            appState.isLoading = false;
+            updateLoadingState(false);
+
+            if (bestRoute) {
+                appState.selectedRoute = bestRoute;
+                showResults();
+            } else {
+                showStatus('Unable to find a suitable circular route. Try a different duration.', 'error');
+            }
+        }
+
+        // Generate waypoints for circular route
+        async function generateCircularWaypoints(origin, durationMinutes) {
+            // Estimate distance based on average speed (30 mph in city, 50 mph highway)
+            const avgSpeedMph = 35;
+            const estimatedDistanceMiles = (durationMinutes / 60) * avgSpeedMph * 0.5; // Half distance for round trip
+            const estimatedDistanceMeters = estimatedDistanceMiles * 1609.34;
+
+            const waypoints = [];
+            const directions = [0, 45, 90, 135, 180, 225, 270, 315]; // 8 directions
+
+            let originLatLng;
+            if (appState.currentLocation) {
+                originLatLng = new google.maps.LatLng(appState.currentLocation.lat, appState.currentLocation.lng);
+            } else {
+                // Geocode the address
+                const geocoder = new google.maps.Geocoder();
+                const geocodeResult = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ address: origin }, (results, status) => {
+                        if (status === 'OK') {
+                            resolve(results[0].geometry.location);
+                        } else {
+                            reject(new Error('Geocoding failed'));
+                        }
+                    });
+                });
+                originLatLng = geocodeResult;
+            }
+
+            // Generate waypoints in different directions
+            directions.forEach(bearing => {
+                const waypoint = google.maps.geometry.spherical.computeOffset(
+                    originLatLng,
+                    estimatedDistanceMeters,
+                    bearing
+                );
+                waypoints.push(waypoint);
+            });
+
+            return waypoints;
+        }
+
+        // Find destination route (original functionality)
+        async function findDestinationRoute() {
+            const origin = appState.currentLocation || elements.currentLocationInput.value.trim();
+            const destination = appState.destination;
+
+            const request = {
+                origin: origin,
+                destination: destination,
+                travelMode: google.maps.TravelMode.DRIVING,
+                provideRouteAlternatives: true
+            };
+
+            directionsService.route(request, (result, status) => {
+                appState.isLoading = false;
+                updateLoadingState(false);
+
+                if (status === 'OK') {
+                    processRoutes(result);
+                    showResults();
+                } else {
+                    handleRouteError(status);
+                }
+            });
+        }
+
+        // Format duration in seconds to readable string
+        function formatDuration(seconds) {
+            const minutes = Math.round(seconds / 60);
+            if (minutes < 60) {
+                return `${minutes} min`;
+            } else {
+                const hours = Math.floor(minutes / 60);
+                const remainingMinutes = minutes % 60;
+                return `${hours}h ${remainingMinutes}m`;
+            }
+        }
+
+        // Format distance in meters to readable string
+        function formatDistance(meters) {
+            const miles = meters * 0.000621371;
+            if (miles < 1) {
+                return `${Math.round(meters * 3.28084)} ft`;
+            } else {
+                return `${miles.toFixed(1)} mi`;
+            }
+        }
+
+        // Process routes and select longest reasonable one
+        function processRoutes(result) {
+            const routes = result.routes.map((route, index) => {
+                const leg = route.legs[0];
+                return {
+                    id: index,
+                    distance: leg.distance,
+                    duration: leg.duration,
+                    directionsResult: result
+                };
+            });
+
+            // Find shortest duration
+            const shortestDuration = Math.min(...routes.map(r => r.duration.value));
+            const maxReasonableDuration = shortestDuration * 2;
+
+            // Filter reasonable routes
+            const reasonableRoutes = routes.filter(r => r.duration.value <= maxReasonableDuration);
+
+            // Select longest reasonable route
+            appState.selectedRoute = reasonableRoutes.reduce((longest, current) => 
+                current.duration.value > longest.duration.value ? current : longest
+            );
+
+            appState.selectedRoute.totalRoutes = routes.length;
+        }
+
+        // Handle route calculation errors
+        function handleRouteError(status) {
+            let message = 'Unable to calculate route. ';
+            
+            switch(status) {
+                case 'NOT_FOUND':
+                    message += 'One or more locations could not be found.';
+                    break;
+                case 'ZERO_RESULTS':
+                    message += 'No route could be found between these locations.';
+                    break;
+                case 'OVER_QUERY_LIMIT':
+                    message += 'Service temporarily unavailable.';
+                    break;
+                case 'REQUEST_DENIED':
+                    message += 'Route service is not available.';
+                    break;
+                default:
+                    message += 'Please check your locations and try again.';
+            }
+            
+            showStatus(message, 'error');
+        }
+
+        // Show results screen
+        function showResults() {
+            elements.homeScreen.classList.add('hidden');
+            elements.resultsScreen.classList.remove('hidden');
+
+            // Update route information
+            const route = appState.selectedRoute;
+            elements.routeDistance.textContent = route.distance.text;
+            elements.routeDuration.textContent = route.duration.text;
+            
+            if (appState.routeType === 'circular') {
+                const targetMinutes = route.targetDuration || appState.napDuration;
+                const actualMinutes = Math.round(route.duration.value / 60);
+                const difference = Math.abs(actualMinutes - targetMinutes);
+                
+                elements.routeDescription.textContent = 
+                    `Circular route for ${targetMinutes}-minute nap (±${difference} min)`;
+            } else {
+                elements.routeDescription.textContent = `Longest of ${route.totalRoutes} routes found`;
+            }
+
+            // Initialize map
+            initializeMap();
+        }
+
+        // Initialize map in results screen
+        function initializeMap() {
+            if (!map) {
+                map = new google.maps.Map(elements.mapContainer, {
+                    zoom: 13,
+                    center: { lat: 37.7749, lng: -122.4194 }
+                });
+
+                directionsRenderer = new google.maps.DirectionsRenderer({
+                    polylineOptions: {
+                        strokeColor: '#667eea',
+                        strokeWeight: 4
+                    }
+                });
+                directionsRenderer.setMap(map);
+            }
+
+            // Display route
+            if (appState.selectedRoute && appState.selectedRoute.directionsResult) {
+                directionsRenderer.setDirections(appState.selectedRoute.directionsResult);
+            }
+        }
+
+        // Start navigation
+        function startNavigation() {
+            if (!appState.selectedRoute) return;
+
+            const origin = encodeURIComponent(elements.currentLocationInput.value);
+            
+            let googleMapsUrl;
+            let nativeUrl;
+
+            if (appState.routeType === 'circular') {
+                // For circular routes, create a waypoint URL
+                const waypoint = appState.selectedRoute.waypoint;
+                const waypointStr = `${waypoint.lat()},${waypoint.lng()}`;
+                
+                googleMapsUrl = `https://www.google.com/maps/dir/${origin}/${waypointStr}/${origin}`;
+                nativeUrl = `comgooglemaps://?saddr=${origin}&daddr=${waypointStr}&waypoints=${origin}&directionsmode=driving`;
+            } else {
+                // Original destination route
+                const destination = encodeURIComponent(appState.destination);
+                googleMapsUrl = `https://www.google.com/maps/dir/${origin}/${destination}`;
+                nativeUrl = `comgooglemaps://?saddr=${origin}&daddr=${destination}&directionsmode=driving`;
+            }
+            
+            // For mobile devices, try to open native app
+            if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                // Try native app first
+                window.location.href = nativeUrl;
+                
+                // Fallback to web after a short delay
+                setTimeout(() => {
+                    window.open(googleMapsUrl, '_blank');
+                }, 1000);
+            } else {
+                window.open(googleMapsUrl, '_blank');
+            }
+        }
+
+        // Go back to home screen
+        function goBack() {
+            elements.resultsScreen.classList.add('hidden');
+            elements.homeScreen.classList.remove('hidden');
+            hideStatus();
+        }
+
+        // Update loading state
+        function updateLoadingState(isLoading) {
+            if (isLoading) {
+                elements.findRouteBtn.innerHTML = '<span class="loading"></span> Finding Route...';
+                elements.findRouteBtn.disabled = true;
+            } else {
+                elements.findRouteBtn.innerHTML = '<span class="btn-text">Find Longest Route</span>';
+                updateFindRouteButton();
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            elements.statusMessage.textContent = message;
+            elements.statusMessage.className = `status ${type}`;
+            elements.statusMessage.classList.remove('hidden');
+        }
+
+        // Hide status message
+        function hideStatus() {
+            elements.statusMessage.classList.add('hidden');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+
+        // Global callback for Google Maps API
+        window.onGoogleMapsLoaded = onGoogleMapsLoaded;
+    </script>
+</body>
+</html>
